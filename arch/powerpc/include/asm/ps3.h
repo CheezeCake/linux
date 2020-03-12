@@ -318,6 +318,7 @@ enum ps3_match_id {
 enum ps3_match_sub_id {
 	PS3_MATCH_SUB_ID_GPU_FB		= 1,
 	PS3_MATCH_SUB_ID_GPU_RAMDISK	= 2,
+	PS3_MATCH_SUB_ID_GPU_DRM	= 3,
 };
 
 #define PS3_MODULE_ALIAS_EHCI		"ps3:1:0"

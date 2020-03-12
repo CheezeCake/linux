@@ -18,6 +18,7 @@ struct nv_device_info_v0 {
 #define NV_DEVICE_INFO_V0_AGP                                              0x02
 #define NV_DEVICE_INFO_V0_PCIE                                             0x03
 #define NV_DEVICE_INFO_V0_SOC                                              0x04
+#define NV_DEVICE_INFO_V0_IOIF                                             0x05
 	__u8  platform;
 	__u16 chipset;	/* from NV_PMC_BOOT_0 */
 	__u8  revision;	/* from NV_PMC_BOOT_0 */

@@ -244,6 +244,12 @@ bool nouveau_pmops_runtime(void);
 struct drm_device *
 nouveau_platform_device_create(const struct nvkm_device_tegra_func *,
 			       struct platform_device *, struct nvkm_device **);
+
+#include <nvkm/core/rsx.h>
+
+struct drm_device *
+nouveau_rsx_create(struct ps3_system_bus_device *sbdev,
+		   struct nvkm_device **pdevice);
 void nouveau_drm_device_remove(struct drm_device *dev);
 
 #define NV_PRINTK(l,c,f,a...) do {                                             \

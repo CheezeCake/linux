@@ -41,6 +41,13 @@ config NOUVEAU_PLATFORM_DRIVER
 	  Support for Nouveau platform driver, used for SoC GPUs as found
 	  on NVIDIA Tegra K1.
 
+config NOUVEAU_PS3_RSX
+	bool "Nouveau PS3 RSX 'Reality Synthesizer' driver"
+	depends on DRM_NOUVEAU && PPC_PS3
+	default y
+	help
+	  Support for the RSX GPU found on the Sony PS3.
+
 config NOUVEAU_DEBUG
 	int "Maximum debug level"
 	depends on DRM_NOUVEAU

@@ -782,6 +782,32 @@ nv4c_chipset = {
 };
 
 static const struct nvkm_device_chip
+nv4d_chipset = {
+	.name = "RSX",
+	/* .bios = nvkm_bios_new, */
+	.bus = nv31_bus_new,
+	/* .clk = nv40_clk_new, */
+	/* .devinit = nv1a_devinit_new, */
+	.fb = nv47_fb_new,
+	/* .gpio = nv10_gpio_new, */
+	/* .i2c = nv04_i2c_new, */
+	.imem = nv40_instmem_new,
+	.mc = nv17_mc_new,
+	.mmu = nv41_mmu_new,
+	/* .pci = nv40_pci_new, */
+	.therm = nv40_therm_new,
+	.timer = nv41_timer_new,
+	.volt = nv40_volt_new,
+	.disp = nv04_disp_new,
+	.dma = nv04_dma_new,
+	.fifo = nv40_fifo_new,
+	.gr = nv40_gr_new,
+	.mpeg = nv44_mpeg_new,
+	.pm = nv40_pm_new,
+	.sw = nv10_sw_new,
+};
+
+static const struct nvkm_device_chip
 nv4e_chipset = {
 	.name = "C51",
 	.bios = nvkm_bios_new,
@@ -3093,6 +3119,7 @@ nvkm_device_ctor(const struct nvkm_device_func *func,
 		case 0x04a: device->chip = &nv4a_chipset; break;
 		case 0x04b: device->chip = &nv4b_chipset; break;
 		case 0x04c: device->chip = &nv4c_chipset; break;
+		case 0x04d: device->chip = &nv4d_chipset; break;
 		case 0x04e: device->chip = &nv4e_chipset; break;
 		case 0x050: device->chip = &nv50_chipset; break;
 		case 0x063: device->chip = &nv63_chipset; break;
@@ -3164,7 +3191,11 @@ nvkm_device_ctor(const struct nvkm_device_func *func,
 		}
 
 		/* read strapping information */
+#ifdef CONFIG_PPC_PS3
+		strap = 0x00400040; /* device->crystal = 25000 */
+#else
 		strap = nvkm_rd32(device, 0x101000);
+#endif
 
 		/* determine frequency of timing crystal */
 		if ( device->card_type <= NV_10 || device->chipset < 0x17 ||

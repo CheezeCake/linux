@@ -37,6 +37,7 @@
 #include <core/gpuobj.h>
 #include <core/option.h>
 #include <core/pci.h>
+#include <core/rsx.h>
 #include <core/tegra.h>
 
 #include <nvif/driver.h>
@@ -64,6 +65,7 @@
 #include "nouveau_usif.h"
 #include "nouveau_connector.h"
 #include "nouveau_platform.h"
+#include "nouveau_rsx.h"
 #include "nouveau_svm.h"
 #include "nouveau_dmem.h"
 
@@ -95,6 +97,7 @@ module_param_named(runpm, nouveau_runtime_pm, int, 0400);
 static struct drm_driver driver_stub;
 static struct drm_driver driver_pci;
 static struct drm_driver driver_platform;
+static struct drm_driver driver_rsx;
 
 static u64
 nouveau_pci_name(struct pci_dev *pdev)
@@ -1244,6 +1247,43 @@ nouveau_drm_pci_driver = {
 };
 
 struct drm_device *
+nouveau_rsx_create(struct ps3_system_bus_device *sbdev,
+		   struct nvkm_device **pdevice)
+{
+	struct drm_device *drm;
+	int err;
+	pr_err(" -> %s()", __func__);
+
+	err = nvkm_device_rsx_new(sbdev, nouveau_config, nouveau_debug,
+				  true, true, ~0ULL, pdevice);
+	if (err)
+		goto err_free;
+
+	drm = drm_dev_alloc(&driver_rsx, &sbdev->core);
+	if (IS_ERR(drm)) {
+		err = PTR_ERR(drm);
+		goto err_free;
+	}
+
+	err = nouveau_drm_device_init(drm);
+	if (err)
+		goto err_put;
+
+	ps3_system_bus_set_drvdata(sbdev, drm);
+
+	pr_err(" <- %s()", __func__);
+	return drm;
+
+err_put:
+	drm_dev_put(drm);
+err_free:
+	nvkm_device_del(pdevice);
+
+	pr_err(" <- %s() ERROR", __func__);
+	return ERR_PTR(err);
+}
+
+struct drm_device *
 nouveau_platform_device_create(const struct nvkm_device_tegra_func *func,
 			       struct platform_device *pdev,
 			       struct nvkm_device **pdevice)
@@ -1283,6 +1323,7 @@ nouveau_drm_init(void)
 {
 	driver_pci = driver_stub;
 	driver_platform = driver_stub;
+	driver_rsx = driver_stub;
 
 	nouveau_display_options();
 
@@ -1301,11 +1342,15 @@ nouveau_drm_init(void)
 	nouveau_register_dsm_handler();
 	nouveau_backlight_ctor();
 
-#ifdef CONFIG_PCI
-	return pci_register_driver(&nouveau_drm_pci_driver);
-#else
-	return 0;
+#ifdef CONFIG_NOUVEAU_PS3_RSX
+	return ps3_system_bus_driver_register(&nouveau_rsx_driver);
 #endif
+
+/* #ifdef CONFIG_PCI */
+/* 	return pci_register_driver(&nouveau_drm_pci_driver); */
+/* #else */
+	return 0;
+/* #endif */
 }
 
 static void __exit
@@ -1314,9 +1359,13 @@ nouveau_drm_exit(void)
 	if (!nouveau_modeset)
 		return;
 
-#ifdef CONFIG_PCI
-	pci_unregister_driver(&nouveau_drm_pci_driver);
+#ifdef CONFIG_NOUVEAU_PS3_RSX
+	ps3_system_bus_driver_unregister(&nouveau_rsx_driver);
 #endif
+
+/* #ifdef CONFIG_PCI */
+/* 	pci_unregister_driver(&nouveau_drm_pci_driver); */
+/* #endif */
 	nouveau_backlight_dtor();
 	nouveau_unregister_dsm_handler();
 

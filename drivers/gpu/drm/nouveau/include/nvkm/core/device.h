@@ -82,6 +82,7 @@ enum nvkm_device_type {
 	NVKM_DEVICE_AGP,
 	NVKM_DEVICE_PCIE,
 	NVKM_DEVICE_TEGRA,
+	NVKM_DEVICE_RSX,
 };
 
 struct nvkm_device {
@@ -185,6 +186,7 @@ struct nvkm_engine *nvkm_device_engine(struct nvkm_device *, int index);
 struct nvkm_device_func {
 	struct nvkm_device_pci *(*pci)(struct nvkm_device *);
 	struct nvkm_device_tegra *(*tegra)(struct nvkm_device *);
+	struct nvkm_device_rsx *(*rsx)(struct nvkm_device *);
 	void *(*dtor)(struct nvkm_device *);
 	int (*preinit)(struct nvkm_device *);
 	int (*init)(struct nvkm_device *);

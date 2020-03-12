@@ -155,6 +155,9 @@ nvkm_udevice_info(struct nvkm_udevice *udev, void *data, u32 size)
 		case NVKM_DEVICE_TEGRA:
 			args->v0.platform = NV_DEVICE_INFO_V0_SOC;
 			break;
+		case NVKM_DEVICE_RSX:
+			args->v0.platform = NV_DEVICE_INFO_V0_IOIF;
+			break;
 		default:
 			WARN_ON(1);
 			break;
