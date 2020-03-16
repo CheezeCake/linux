@@ -10,23 +10,54 @@ static int rsx_probe(struct ps3_system_bus_device *sbdev)
 
 	pr_err(" -> %s()", __func__);
 
-	drm = nouveau_rsx_create(sbdev, &device);
-	if (IS_ERR(drm))
-		return PTR_ERR(drm);
+	ret = ps3_open_hv_device(sbdev);
+	if (ret) {
+		dev_dbg(&sbdev->core, "%s:ps3_open_hv_device failed\n",
+			__func__);
+		goto fail_open;
+	}
 
-	pr_err("%s(): before drm_dev_register", __func__);
+	ret = ps3_dma_region_create(sbdev->d_region);
+	if (ret) {
+		dev_dbg(&sbdev->core, "%s:ps3_dma_region_create failed(%d)\n",
+			__func__, ret);
+		BUG_ON("check region type");
+		goto fail_dma_region;
+	}
+
+	drm = nouveau_rsx_create(sbdev, &device);
+	if (IS_ERR(drm)) {
+		ret = PTR_ERR(drm);
+		goto fail_rsx_create;
+	}
+
 	ret = drm_dev_register(drm, 0);
 	if (ret < 0) {
 		drm_dev_put(drm);
-		return ret;
+		goto fail_drm_register;
 	}
 
 	pr_err(" <- %s()", __func__);
 	return 0;
+
+fail_drm_register:
+fail_rsx_create:
+	ps3_dma_region_free(sbdev->d_region);
+fail_dma_region:
+	ps3_close_hv_device(sbdev);
+fail_open:
+	pr_err(" <- %s() ret=%d", __func__, ret);
+	return ret;
 }
 
-static int rsx_shutdown(struct ps3_system_bus_device *dev)
+static int rsx_shutdown(struct ps3_system_bus_device *sbdev)
 {
+	struct drm_device *dev = ps3_system_bus_get_drvdata(sbdev);
+
+	nouveau_drm_device_remove(dev);
+	ps3_dma_region_free(sbdev->d_region);
+	ps3_close_hv_device(sbdev);
+
 	return 0;
 }
 

@@ -14,7 +14,7 @@
 
 /* PRAMIN */
 #define RSX_BAR2_ADDR	0x28002000000ULL
-#define RSX_BAR2_SIZE	(72 * 1024)
+#define RSX_BAR2_SIZE	(1 * 1024 * 1024)
 
 static struct nvkm_device_rsx *
 nvkm_device_rsx(struct nvkm_device *device)

@@ -211,6 +211,7 @@ nv40_gr_tile(struct nvkm_gr *base, int i, struct nvkm_fb_tile *tile)
 	case 0x47:
 	case 0x49:
 	case 0x4b:
+	case 0x4d:
 		nvkm_wr32(device, NV47_PGRAPH_TSIZE(i), tile->pitch);
 		nvkm_wr32(device, NV47_PGRAPH_TLIMIT(i), tile->limit);
 		nvkm_wr32(device, NV47_PGRAPH_TILE(i), tile->addr);

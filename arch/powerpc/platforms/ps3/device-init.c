@@ -546,6 +546,7 @@ static int __init ps3_register_graphics_drm_device(void)
 	int result;
 	struct layout {
 		struct ps3_system_bus_device dev;
+		struct ps3_dma_region d_region;
 	} *p;
 
 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
@@ -558,6 +559,16 @@ static int __init ps3_register_graphics_drm_device(void)
 	p->dev.match_id = PS3_MATCH_ID_GPU;
 	p->dev.match_sub_id = PS3_MATCH_SUB_ID_GPU_DRM;
 	p->dev.dev_type = PS3_DEVICE_TYPE_IOC0;
+	p->dev.d_region = &p->d_region;
+
+	result = ps3_dma_region_init(&p->dev, p->dev.d_region, PS3_DMA_4K,
+				     PS3_DMA_OTHER, NULL, 0);
+
+	if (result) {
+		pr_debug("%s:%d ps3_dma_region_init failed\n",
+			__func__, __LINE__);
+		goto fail_dma_init;
+	}
 
 	result = ps3_system_bus_device_register(&p->dev);
 
@@ -571,6 +582,7 @@ static int __init ps3_register_graphics_drm_device(void)
 	return 0;
 
 fail_device_register:
+fail_dma_init:
 	kfree(p);
 	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
 	return result;
